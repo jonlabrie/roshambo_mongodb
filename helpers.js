@@ -1,5 +1,5 @@
 exports.helpers = {
-  appName: 'Nodepad',
+  appName: 'rôshåmbō',
   version: '0.1',
 
   nameAndVersion: function(name, version) {

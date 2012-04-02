@@ -12,8 +12,11 @@ var express = require('express'),
     path = require('path'),
     models = require('./models'),
     db,
-    Document,
+    Round,
+    Throw,
     User,
+    Points,
+    Badges,
     LoginToken,
     Settings = { development: {}, test: {}, production: {} },
     emails;
@@ -55,7 +58,7 @@ emails = {
   },
 
   sendWelcome: function(user) {
-    this.send('welcome.jade', { to: user.email, subject: 'Welcome to Nodepad' }, { locals: { user: user } });
+    this.send('welcome.jade', { to: user.email, subject: 'Welcome to rôshåmbō!' }, { locals: { user: user } });
   }
 };
 
@@ -63,7 +66,7 @@ app.helpers(require('./helpers.js').helpers);
 app.dynamicHelpers(require('./helpers.js').dynamicHelpers);
 
 app.configure('development', function() {
-  app.set('db-uri', 'mongodb://localhost/nodepad-development');
+  app.set('db-uri', 'mongodb://localhost/roshambo-development');
   app.use(express.errorHandler({ dumpExceptions: true }));
   app.set('view options', {
     pretty: true
@@ -71,14 +74,14 @@ app.configure('development', function() {
 });
 
 app.configure('test', function() {
-  app.set('db-uri', 'mongodb://localhost/nodepad-test');
+  app.set('db-uri', 'mongodb://localhost/roshambo-test');
   app.set('view options', {
     pretty: true
   });  
 });
 
 app.configure('production', function() {
-  app.set('db-uri', 'mongodb://localhost/nodepad-production');
+  app.set('db-uri', 'mongodb://localhost/roshambo-production');
 });
 
 app.configure(function() {
@@ -95,13 +98,16 @@ app.configure(function() {
   app.set('mailOptions', {
     host: 'localhost',
     port: '25',
-    from: 'nodepad@example.com'
+    from: 'roshambo@playroshambo.com'
   });
 });
 
 models.defineModels(mongoose, function() {
-  app.Document = Document = mongoose.model('Document');
+  app.Round = Round = mongoose.model('Round');
+  app.Throw = Throw = mongoose.model('Throw'); 
   app.User = User = mongoose.model('User');
+  app.Points = Points = mongoose.model('Points');
+  app.Badges = Badges = mongoose.model('Badges');
   app.LoginToken = LoginToken = mongoose.model('LoginToken');
   db = mongoose.connect(app.set('db-uri'));
 })
@@ -195,8 +201,8 @@ if (app.settings.env == 'production') {
   });
 }
 
-// Document list
-app.get('/documents', loadUser, function(req, res) {
+// Current Round (was Document list)
+app.get('/round', loadUser, function(req, res) {
   Document.find({ user_id: req.currentUser.id },
                 [], { sort: ['title', 'descending'] },
                 function(err, documents) {
